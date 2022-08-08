@@ -27,6 +27,8 @@ For ease, copy the command above into init.sh and execute it.  The `init.sh` is 
 
 ## Starting and stopping the Local K8s cluster
 
+### On MacOS
+
 Starting: 
 
 ```sh
@@ -39,14 +41,34 @@ Stopping:
 ./shutdown.sh
 ```
 
+### On Windows
+
+Starting: 
+
+```sh
+.\startup.ps1
+```
+
+Stopping:
+
+```sh
+.\shutdown.ps1
+```
+
 ## Access local gateway rouer
 ```
 {sudo} kubectl port-forward --address 0.0.0.0 service/hydra-router-cluster-ip-service 80:5353
 kubectl port-forward --address 0.0.0.0 service/redis-cluster-ip-service 6379:6379
 ```
 
-## Using ngrok
+## Optional using ngrok
 
 ```
  ./ngrok.exe http --subdomain=cjus 80
 ```
+
+## Use of Redis
+This repo uses RedisStack to enable a local Redis cluster.
+It's highly recommended that you consider using RedisInsight to access the Redis Service.
+
+Download a version for your OS: https://redis.io/docs/stack/insight/#download-the-latest-redisinsight
