@@ -3,7 +3,7 @@ Local Kubernetes Cluster
 
 This repo is design to enable a Kubernetes cluster environment for use in development. 
 
-The cluster hosts services such as a single instance of Redis.  MongoDB is also available within the cluster.  
+The cluster hosts services such as a single instance of Redis and MongoDB.  
 
 ## Machine setup
 
@@ -61,14 +61,13 @@ Stopping:
 kubectl port-forward --address 0.0.0.0 service/redis-cluster-ip-service 6379:6379
 ```
 
-## Optional using ngrok
+## Optional: using ngrok
 
 ```
  ./ngrok.exe http --subdomain=cjus 80
 ```
 
 ## Use of Redis
-This repo uses RedisStack to enable a local Redis cluster.
-It's highly recommended that you consider using RedisInsight to access the Redis Service.
+This repo uses RedisStack to enable a local Redis server. It's highly recommended that you consider using RedisInsight to access the Redis Service.
 
 Download a version for your OS: https://redis.io/docs/stack/insight/#download-the-latest-redisinsight
