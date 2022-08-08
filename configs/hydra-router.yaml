@@ -1,0 +1,88 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: hydra-router-cluster-ip-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 5353
+    targetPort: 5353
+    protocol: TCP
+  selector:
+    app: hydra-router
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hydra-router-deployment
+  labels:
+    app: hydra-router
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hydra-router
+  template:
+    metadata:
+      labels:
+        app: hydra-router
+    spec:
+      containers:
+        - name: hydra-router
+          image: pnxtech/hydra-router:1.9.5
+          resources:
+            limits:
+              cpu: "2m"
+              memory: "256Mi"
+            requests:
+              cpu: "1m"
+              memory: "20Mi"
+          ports:
+            - containerPort: 5353
+              protocol: TCP
+          volumeMounts:
+          - name: hydra-router-config-volume
+            mountPath: /usr/src/app/config
+      volumes:
+        - name: hydra-router-config-volume
+          configMap:
+            name: hydra-router-config      
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hydra-router-config
+data:
+  config.json: |-
+    {
+      "externalRoutes": {},
+      "routerToken": "",
+      "disableRouterEndpoint": false,
+      "debugLogging": true,
+      "queuerDB": 3,
+      "requestTimeout": 300,
+      "rateLimiter": {
+        "db": 14,
+        "limit": -1,
+        "duration": 3600
+      },
+      "forceMessageSignature": false,
+      "signatureSharedSecret": "d632dd6d-fb75-44cc-bdbf-ee1364f3716c",
+      "hydra": {
+        "serviceName": "hydra-router",
+        "serviceDNS": "hydra-router",
+        "serviceDescription": "Service Router",
+        "serviceIP": "",
+        "servicePort": "5353",
+        "serviceType": "router",
+        "plugins": {
+          "hydraLogger": {
+            "logToConsole": true,
+            "onlyLogLocally": false
+          }
+        },
+        "redis": {
+          "url": "redis://redis-cluster-ip-service:6379/0"
+        }
+      }
+    }

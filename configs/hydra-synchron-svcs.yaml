@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hydra-synchron-svcs-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: hydra-synchron-svcs
+  template:
+    metadata:
+      labels:
+        component: hydra-synchron-svcs
+    spec:
+      containers:
+        - name: hydra-synchron-svcs
+          image: pnxtech/hydra-synchron-svcs:1.2.3
+          resources:
+            limits:
+              cpu: "10m"
+              memory: "256Mi"
+            requests:
+               cpu: "5m"
+               memory: "20Mi"
+          ports:
+            - containerPort: 11111
+          volumeMounts:
+            - name: hydra-synchron-svcs-config-volume
+              mountPath: /usr/src/app/config
+      volumes:
+        - name: hydra-synchron-svcs-config-volume
+          configMap:
+            name: hydra-synchron-svcs-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hydra-synchron-svcs-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: hydra-synchron-svcs
+  ports:
+    - port: 11111
+      targetPort: 11111
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hydra-synchron-svcs-config
+data:
+  config.json: |-
+    {
+      "mongodb": {
+        "connectionString": "mongodb://mongo-cluster-ip-service"
+      },
+      "enableDebugTrace": false,
+      "hydra": {
+        "serviceName": "hydra-synchron-svcs",
+        "serviceIP": "",
+        "servicePort": 11111,
+        "serviceType": "Queuing",
+        "serviceDescription": "Hydra Synchronization Service",
+        "plugins": {
+          "hydraLogger": {
+            "logToConsole": true,
+            "onlyLogLocally": false
+          }
+        },
+        "redis": {
+          "url": "redis://redis-cluster-ip-service:6379/0"
+        }
+      }
+    }

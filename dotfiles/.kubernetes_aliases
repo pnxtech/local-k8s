@@ -1,0 +1,25 @@
+export K8S_NAMESPACE='default'
+kcn() {
+  export K8S_NAMESPACE="$1"
+}
+alias kc='kubectl -n ${K8S_NAMESPACE}'
+alias kca='kc apply -f'
+alias kcdp='kc describe pod'
+alias kcds='kc describe service'
+alias kcga='kc get all'
+alias kcgan='kc get all --all-namespaces'
+alias kcgd='kc get deployments'
+alias kcge='kc get events'
+alias kcgn='kc get namespaces'
+alias kcgp='kc get pods'
+alias kcgr='kc get replicasets'
+alias kcgs='kc get services'
+alias kcgi='kc cluster-info'
+kce() {
+  kc exec --stdin --tty $1 -- $2
+}
+alias kcl='kc logs'
+alias kcd='kc describe'
+alias kcpf='kc port-forward'
+alias kctp='kc top pods'
+alias kcxa='kc delete all --all'

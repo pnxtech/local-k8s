@@ -1,0 +1,97 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-v1-svcs-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      component: auth-v1-svcs
+  template:
+    metadata:
+      labels:
+        component: auth-v1-svcs
+    spec:
+      containers:
+        - name: auth-v1-svcs
+          image: pnxtech/auth-v1-svcs:0.1.10
+          resources:
+            limits:
+              cpu: "2m"
+              memory: "128Mi"
+            requests:
+              cpu: "1m"
+              memory: "32Mi"
+          ports:
+            - containerPort: 1337
+          env:
+            - name: AUTH_JWT_PRIVATE_CERT_PATH
+              value: /etc/private/certs/auth-v1-svcs-private-cert.pem
+            - name: AUTH_JWT_PUBLIC_CERT_PATH
+              value: /etc/public/certs/auth-v1-svcs-public-cert.pub
+          volumeMounts:
+            - name: auth-v1-svcs-config-volume
+              mountPath: /usr/src/app/config
+            - name: private-cert-volume
+              mountPath: /etc/private/certs
+              readOnly: true                          
+            - name: public-cert-volume
+              mountPath: /etc/public/certs
+              readOnly: true                          
+      volumes:
+        - name: auth-v1-svcs-config-volume
+          configMap:
+            name: auth-v1-svcs-config
+        - name: private-cert-volume
+          secret:
+            secretName: auth-jwt-private-cert 
+        - name: public-cert-volume
+          secret:
+            secretName: auth-jwt-public-cert
+      imagePullSecrets:
+        - name: regsecret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-v1-svcs-cluster-ip-service
+spec:
+  type: ClusterIP
+  selector:
+    component: auth-v1-svcs
+  ports:
+    - port: 1337
+      targetPort: 1337
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-v1-svcs-config
+data:
+  config.json: |-
+    {
+      "publicCert": "/run/secrets/service.pub",
+      "privateCert": "/run/secrets/service.pem",
+      "jwtPublicCert": "/run/secrets/service.pub",
+      "accessTokenExpirationInSeconds": 3600,
+      "refreshTokenExpirationInSeconds": 86400,      
+      "mongodb": {
+        "connectionString": "mongodb://mongo-cluster-ip-service"
+      },      
+      "hydra": {
+        "serviceName": "auth-v1-svcs",
+        "serviceIP": "",
+        "servicePort": 1337,
+        "serviceType": "auth",
+        "serviceDescription": "auth service",
+        "plugins": {
+          "hydraLogger": {
+            "logToConsole": true,
+            "onlyLogLocally": false
+          }
+        },
+        "redis": {
+          "url": "redis://redis-cluster-ip-service:6379/0"
+        }
+      }
+    }
