@@ -1,3 +1,8 @@
+REDIS_ID=$(docker ps -aqf "name=redis")
+docker exec -it ${REDIS_ID} /usr/bin/redis-cli -n 0 save > /dev/null 2>&1
+
+sleep 5
+
 kubectl delete deployment hydra-router-deployment
 kubectl delete service hydra-router-cluster-ip-service
 kubectl delete configmap hydra-router-config
